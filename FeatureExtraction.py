@@ -10,5 +10,3 @@ import speechpy as sp
 import InputPreparation
 
 print(sp.processing.preemphasis(InputPreparation.convert_audio("Data/")[1]))
-
-print('')
