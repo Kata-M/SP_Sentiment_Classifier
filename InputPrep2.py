@@ -135,7 +135,7 @@ def cut_all_audio(filenames, timestamps):
                     print("end time stamp larger than audio duration")
 
 
-def prepare_input_data(path_audiofiles, path_timestamps):
+def prepare_segments(path_audiofiles, path_timestamps):
     """
     Method to be called from main to process input (cut audios for further processing)
     """
@@ -148,5 +148,55 @@ def prepare_input_data(path_audiofiles, path_timestamps):
     print("cut all audio called from prepare input data and done!")
 
 
-prepare_input_data("Data/Original/", "Data/timestamps.csv")
+#prepare_segments("Data/Original/", "Data/timestamps.csv")
 
+def add_classification_labels(path, self_eval_rates):
+    """"
+    Method for labelling the audio files to stressed and non-stressed. File name Y-name if stressed, N-name if not stressed
+    """
+    audio_files = get_audiofilenames(path)
+    df = pd.read_csv(self_eval_rates)
+    print(df)
+    eval_rates = df.values.tolist()
+    print(eval_rates)
+    i = 0
+    for file in audio_files:
+        rating = ""
+        print("----File----")
+        print(file)
+        p_no_audio_file = file[1] #str
+        print("person in audio file : "+p_no_audio_file)
+        for rate in eval_rates:
+            # check that the evaluation participant matches with participant audio
+            p_no_rate = str(rate[0])  # cast int to str
+            print("person in evaluation form : " + p_no_rate)
+            if p_no_rate == p_no_audio_file:
+                print("found a match in participant numbers between evaluation and audio files : "+p_no_audio_file+" - "+p_no_rate)
+                file_segment = int(file[3]) #get the segment number from the audio file name
+                rate_seg = rate[1] #get the segment number from the evaluation form
+                rate_rating = rate[3] #get the rating of overwhelmedness from the evaluation form
+                print("*************")
+                print("file_segment : " + str(file_segment))
+                print("rate_seg : "+str(rate_seg))
+                print("rate_rating : "+str(rate_rating))
+                print("*************")
+
+                if file_segment == rate_seg and rate_rating < 3:
+                    print("in rating N")
+                    rating = "N_"
+                    # remane the file name according to self eval rating
+                    os.rename(path + file, path + rating + file)
+                elif file_segment == rate_seg and rate_rating > 2:
+                    print("in rating Y")
+                    rating = "Y_"
+                    # remane the file name according to self eval rating
+                    os.rename(path + file, path + rating + file)
+                else:
+                    print("No match between audio and evaluation form found!")
+
+        i += 1
+    print("Labelling DONE!")
+
+
+# test the fucntion above
+add_classification_labels("Data/p4_segmented/", "Data/Self_Eval_p4.csv")
