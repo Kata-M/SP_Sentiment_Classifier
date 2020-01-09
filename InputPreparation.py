@@ -200,4 +200,4 @@ def add_classification_labels(path, self_eval_rates):
 
 # test the function above
 # change the path to audio files according to the participant: "Data/pX_segmented/". E.g. "Data/p2_segmented/"
-add_classification_labels("Data/p2_segmented/", "Data/Self_Eval.csv")
+#add_classification_labels("Data/p2_segmented/", "Data/Self_Eval.csv")
