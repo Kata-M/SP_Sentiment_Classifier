@@ -198,6 +198,5 @@ def add_classification_labels(path, self_eval_rates):
     print("Labelling DONE!")
 
 
-# test the function above
-# change the file path to the right participant: "Data/pX_segmented"
-add_classification_labels("Data/p2_segmented/", "Data/Self_Eval.csv")
+# test the fucntion above
+add_classification_labels("Data/p4_segmented/", "Data/Self_Eval_p4.csv")
