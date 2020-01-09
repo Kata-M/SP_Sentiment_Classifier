@@ -1,2 +1,4 @@
 *.wav
-
+.idea
+/Data
+.DS_Store
