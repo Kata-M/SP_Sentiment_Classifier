@@ -1,17 +1,15 @@
 """
-Convert the .wav audio files to arrays that can be used for further processing and classification
+Convert the .wav audio files so that they can be used for further processing and classification
 """
 
 import os
-import numpy as np
-from scipy.io.wavfile import read
-from pydub import AudioSegment
 import math
 import pandas as pd
 import librosa
-
+from pydub import AudioSegment
 
 path_test = "Data/Original/"
+
 def get_audiofilenames(path):
     """
     Method to get the audiofile names with extension .wav
@@ -29,8 +27,8 @@ def get_audiofilenames(path):
     print("---------------------------")
     return audio_collection
 
-#test the above function
-#get_audiofilenames(path_test)
+# test the above function
+# get_audiofilenames(path_test)
 
 
 def get_timestamps(path):
@@ -51,8 +49,9 @@ def get_timestamps(path):
     print("---------------------------")
     return timestamps
 
-#test the above function
-#get_timestamps("Data/timestamps.csv")
+
+# test the above function
+# get_timestamps("Data/timestamps.csv")
 
 
 def cut_audio_segment(old_name, start_stamp, end_stamp, new_name):
@@ -69,7 +68,7 @@ def cut_audio_segment(old_name, start_stamp, end_stamp, new_name):
     else:
         print("in cut audio segment else")
         start = (math.floor(start_stamp) * 60 * 1000) + (
-                    (start_stamp - math.floor(start_stamp)) * 100000)  # Works in milliseconds
+                (start_stamp - math.floor(start_stamp)) * 100000)  # Works in milliseconds
         print("---------------------------")
         print(math.floor(start_stamp))
         print(start_stamp - math.floor(start_stamp))
@@ -81,25 +80,14 @@ def cut_audio_segment(old_name, start_stamp, end_stamp, new_name):
         print(end_stamp - math.floor(end_stamp))
         print(end)
         print("---------------------------")
-        #print("test librosa: ")
-        # gets the duration of the audio in seconds
-        #audio_duration = librosa.get_duration(filename=old_name)
-        # convert audio duration to ms
-       # audio_duration_ms = audio_duration * 1000
-        #print(audio_duration_ms)
         old_audio = AudioSegment.from_wav(old_name)
-        #print("past old audio")
-        #if end <= audio_duration_ms:
         new_audio = old_audio[start:end]
         print("past audio split")
-        new_audio.export("./Data/Segmented/"+new_name + '.wav', format="wav")
+        new_audio.export("./Data/Segmented/" + new_name + '.wav', format="wav")
         print("past export of:  " + new_name + '.wav')
-        #else:
-            #print("end time stamp larger than audio duration")
 
-
-#test the above function
-#cut_audio_segment("Data/Original/abc.wav", 0.00 , 0.165 , "test")
+# test the above function
+# cut_audio_segment("Data/Original/abc.wav", 0.00 , 0.165 , "test")
 
 
 def cut_all_audio(filenames, timestamps):
@@ -118,8 +106,8 @@ def cut_all_audio(filenames, timestamps):
         audio_duration_ms = audio_duration * 1000
         print(audio_duration_ms)
         for timestamp in timestamps:
-            #reading the whole audio file from file takes a long time!
-            #old_audio = AudioSegment.from_wav("Data/Original/"+filename)
+            # reading the whole audio file from file takes a long time!
+            # old_audio = AudioSegment.from_wav("Data/Original/"+filename)
             end_stamp = timestamp[3]
             if math.isnan(end_stamp):
                 print("reached NaN timestamp")
@@ -129,8 +117,8 @@ def cut_all_audio(filenames, timestamps):
                     seg_no = timestamp[0]
                     q_no = timestamp[1]
                     new_name = filename[:2] + '_' + str(seg_no) + '_q' + str(q_no)
-                    print("start cut audio segment for : "+filename)
-                    cut_audio_segment("Data/Original/"+filename, timestamp[2], timestamp[3], new_name)
+                    print("start cut audio segment for : " + filename)
+                    cut_audio_segment("Data/Original/" + filename, timestamp[2], timestamp[3], new_name)
                 else:
                     print("end time stamp larger than audio duration")
 
@@ -148,7 +136,7 @@ def prepare_segments(path_audiofiles, path_timestamps):
     print("cut all audio called from prepare input data and done!")
 
 
-#prepare_segments("Data/Original/", "Data/timestamps.csv")
+# prepare_segments("Data/Original/", "Data/timestamps.csv")
 
 def add_classification_labels(path, self_eval_rates):
     """"
@@ -164,23 +152,23 @@ def add_classification_labels(path, self_eval_rates):
         rating = ""
         print("----File----")
         print(file)
-        p_no_audio_file = file[1] #str
-        print("person in audio file : "+p_no_audio_file)
+        p_no_audio_file = file[1]  # str
+        print("person in audio file : " + p_no_audio_file)
         for rate in eval_rates:
             # check that the evaluation participant matches with participant audio
             p_no_rate = str(rate[0])  # cast int to str
             print("person in evaluation form : " + p_no_rate)
             if p_no_rate == p_no_audio_file:
-                print("found a match in participant numbers between evaluation and audio files : "+p_no_audio_file+" - "+p_no_rate)
-                file_segment = int(file[3]) #get the segment number from the audio file name
-                rate_seg = rate[1] #get the segment number from the evaluation form
-                rate_rating = rate[3] #get the rating of overwhelmedness from the evaluation form
+                print(
+                    "found a match in participant numbers between evaluation and audio files : " + p_no_audio_file + " - " + p_no_rate)
+                file_segment = int(file[3])  # get the segment number from the audio file name
+                rate_seg = rate[1]  # get the segment number from the evaluation form
+                rate_rating = rate[3]  # get the rating of overwhelmedness from the evaluation form
                 print("*************")
                 print("file_segment : " + str(file_segment))
-                print("rate_seg : "+str(rate_seg))
-                print("rate_rating : "+str(rate_rating))
+                print("rate_seg : " + str(rate_seg))
+                print("rate_rating : " + str(rate_rating))
                 print("*************")
-
                 if file_segment == rate_seg and rate_rating < 3:
                     print("in rating N")
                     rating = "N_"
@@ -193,11 +181,32 @@ def add_classification_labels(path, self_eval_rates):
                     os.rename(path + file, path + rating + file)
                 else:
                     print("No match between audio and evaluation form found!")
-
         i += 1
     print("Labelling DONE!")
 
 
 # test the function above
 # change the path to audio files according to the participant: "Data/pX_segmented/". E.g. "Data/p2_segmented/"
-add_classification_labels("Data/p2_segmented/", "Data/Self_Eval.csv")
+# add_classification_labels("Data/p2_segmented/", "Data/Self_Eval.csv")
+
+def remove_silences(path , silence_thres_dB ):
+    # get audio file names
+    filenames = get_audiofilenames(path)
+    for filename in filenames:
+        print("----file name  ----")
+        print(filename)
+        # Load some audio
+        y, sr = librosa.load(path + filename)
+        print("get audio done")
+        # Trim the beginning and ending silence
+        print("trim start")
+        yt, index = librosa.effects.trim(y, silence_thres_dB)
+        print("trim done")
+        # Print the durations
+        print(librosa.get_duration(y), librosa.get_duration(yt))
+        print("Remove silence done")
+        librosa.output.write_wav("Data/all_p_no_silence/"+filename, yt, sr, norm=True)
+        print("write to file done")
+
+# execute remove silences
+remove_silences("Data/all_p_segmented/", 27.0)
