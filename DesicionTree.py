@@ -8,13 +8,14 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 from InputPreparation import get_audiofilenames
-
+import graphviz as g
 
 from sklearn.datasets import load_iris
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
 from sklearn.tree import export_graphviz
+from sklearn import tree
 from sklearn.externals.six import StringIO
 from IPython.display import Image
 from pydot import graph_from_dot_data
@@ -44,13 +45,16 @@ def get_targets_table(path):
     # make a two dimensional array with [ filename, stressed, non-stressed] eg [ N_p4_1_q1.wav , 0 , 1 ]
     first_letter = ""
     y = list()
+    i = 0
     for audiofile in audio_file_names:
         first_letter = audiofile[0]
         print(first_letter)
         if first_letter == "N":
-            y.append([audiofile, 0, 1])
+            y.append("N")
         else:
-            y.append([audiofile, 1, 0])
+            y.append("Y")
+        i +=1
+
 
     for yrow in y:
         print(yrow)
@@ -95,17 +99,19 @@ def main():
     dt.fit(X_train, y_train)
     # decision tree produced by our model
 
+    """
     dot_data = StringIO()
     export_graphviz(dt, out_file=dot_data, feature_names=["a1" , "a2" , "a3" , "a4"])
     (graph,) = graph_from_dot_data(dot_data.getvalue())
     Image(graph.create_png())
-
+    """
 
     # see how the model performs on the test data
     y_pred = dt.predict(X_test)
     i = 0
     for y in y_pred:
         print(y)
+        """ 
         if int(y[2]) == y_test[i][2]:
             print(" -- correct -- ")
             print(y[0])
@@ -122,19 +128,20 @@ def main():
             print(y_test[i][0])
             print(y_test[i][1])
             print(y_test[i][2])
+        """
         i += 1
 
     print("y pred")
     print(y_pred)
-    species = np.array(y_test).argmax(axis=1)
+    #species = np.array(y_test).argmax(axis=1)
     print("species")
-    print(species)
-    predictions = np.array(y_pred).argmax(axis=1)
+   # print(species)
+   # predictions = np.array(y_pred).argmax(axis=1)
     print("predictions")
-    print(predictions)
-    cf = confusion_matrix(species, predictions)
+  #  print(predictions)
+   # cf = confusion_matrix(species, predictions)
     print("confusion matrix")
-    print(cf)
+    #print(cf)
     print("main DONE")
 
 
@@ -203,8 +210,13 @@ def cal_accuracy(y_test, y_pred):
 # Driver code
 def main2():
     # Building Phase
-    data = importdata()
-    X, Y, X_train, X_test, y_train, y_test = splitdataset(data)
+    #data = importdata()
+    #X, Y, X_train, X_test, y_train, y_test = splitdataset(data)
+    X = get_feature_file("Data/test_fake_features_for_DT.csv")
+    Y = get_targets_table("Data/test_DT/")
+
+    X_train, X_test, y_train, y_test = split_to_train_test(X, Y)
+
     clf_gini = train_using_gini(X_train, X_test, y_train)
     clf_entropy = tarin_using_entropy(X_train, X_test, y_train)
 
@@ -220,6 +232,10 @@ def main2():
     y_pred_entropy = prediction(X_test, clf_entropy)
     cal_accuracy(y_test, y_pred_entropy)
 
+    data = export_graphviz(clf_entropy, feature_names=["a1", "a2", "a3", "a4"])
+    graph = g.Source(data, format="png")
+    graph.render("./results/ds_{}".format(1))
+
 # Calling main function
-# if __name__ == "__main__":
-# main()
+ #if __name__ == "__main__":
+main2()
