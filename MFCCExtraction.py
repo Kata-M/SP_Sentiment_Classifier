@@ -5,8 +5,6 @@ MFCCs with deltas and delta deltas
 import numpy
 import scipy.io.wavfile as wav
 from scipy.fftpack import dct
-from python_speech_features import mfcc
-from python_speech_features import logfbank
 
 
 def import_signal(file):
@@ -18,6 +16,8 @@ def import_signal(file):
     sample_rate, signal = wav.read(file)
     return sample_rate, signal
 
+r, s = import_signal("Data/p2_segmented/p2_1_q1.wav")
+
 def preemphasis(signal):
     """
     Method to pre-emphasize given audio signal by alpha = 0.97
@@ -27,7 +27,7 @@ def preemphasis(signal):
     pre_emphasis = 0.97
     emphasized_signal = numpy.append(signal[0], signal[1:] - pre_emphasis * signal[:-1])
     return emphasized_signal
-
+print(preemphasis(s))
 
 def frame(signal, sample_rate):
     """
@@ -118,7 +118,7 @@ def compute_mfcc(file):
     :return: 12 mfccs per frame in the given file
     """
     num_ceps = 12 #number of cepstral coefficients
-    nfft = 2048
+    nfft = 512
     sample_rate, signal = import_signal(file)
     signal = preemphasis(signal)
     frames, frame_length = frame(signal, sample_rate)
@@ -129,10 +129,4 @@ def compute_mfcc(file):
     return mfccs
 
 x = compute_mfcc("Data/p2_segmented/p2_1_q1.wav")
-print(x[0], len(x[0]))
-
-(rate, sig) = wav.read("Data/p2_segmented/p2_1_q1.wav")
-mfcc_feat = mfcc(sig, rate, numcep=12, nfilt=40, winfunc=numpy.hamming, nfft=2048)
-#fbank_feat = logfbank(sig, rate)
-
-print(mfcc_feat[0])
+print(x[0], len(x))
