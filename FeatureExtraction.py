@@ -54,6 +54,6 @@ def extract_power_spectrum(audio, rate):
     return power_spectrum
 
 
-s,r = preemphasize_signal("Data/p2_segmented/p2_1_q1.wav")
-spec = extract_spectrum(s,r)
-power = extract_power_spectrum(s,r)
+#s,r = preemphasize_signal("Data/p2_segmented/p2_1_q1.wav")
+#spec = extract_spectrum(s,r)
+#power = extract_power_spectrum(s,r)

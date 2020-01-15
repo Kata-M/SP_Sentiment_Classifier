@@ -26,7 +26,9 @@ def get_audiofilenames(path):
             audio_collection.append(filename)
 
     print("get audio files result: ")
-    print(audio_collection)
+    print("---------------------------")
+    for audio in audio_collection:
+        print(audio)
     print("---------------------------")
     return audio_collection
 
@@ -210,4 +212,4 @@ def remove_silences(path , silence_thres_dB ):
         print("write to file done")
 
 # execute remove silences
-remove_silences("Data/all_p_segmented/", 27.0)
+#remove_silences("Data/all_p_segmented/", 27.0)

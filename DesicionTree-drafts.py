@@ -31,6 +31,8 @@ def get_feature_file(path):
     """
     df = pd.read_csv(path)
     X = df.values.tolist()  # X = features
+    print(" x feature matrix")
+    print("---------------------------")
     for row in X:
         print(row)
 
@@ -42,22 +44,21 @@ def get_feature_file(path):
 
 def get_targets_table(path):
     audio_file_names = get_audiofilenames(path)
-    # make a two dimensional array with [ filename, stressed, non-stressed] eg [ N_p4_1_q1.wav , 0 , 1 ]
     first_letter = ""
     y = list()
     i = 0
     for audiofile in audio_file_names:
         first_letter = audiofile[0]
-        print(first_letter)
+        #print(first_letter)
         if first_letter == "N":
             y.append("N")
         else:
             y.append("Y")
         i +=1
 
-
-    for yrow in y:
-        print(yrow)
+    print(" y target values ")
+    print("---------------------------")
+    print(y)
 
     return y
 
@@ -79,9 +80,9 @@ def create_dt_instance(x_train, y_train):
     dt.fit(x_train, y_train)
 
 
-def main():
-    X = get_feature_file("Data/test_fake_features_for_DT.csv")
-    y = get_targets_table("Data/test_DT/")
+def apply_desicion_tree(path_to_feature_file, path_to_audio_files):
+    X = get_feature_file(path_to_feature_file)
+    y = get_targets_table(path_to_audio_files)
 
     X_train, X_test, y_train, y_test = split_to_train_test(X, y)
 
@@ -93,6 +94,7 @@ def main():
     print(y_train)
     print("--------- y test ----------")
     print(y_test)
+    print("---------------------------")
 
     #create_dt_instance(X_train, y_train)
     dt = DecisionTreeClassifier()
@@ -110,7 +112,7 @@ def main():
     y_pred = dt.predict(X_test)
     i = 0
     for y in y_pred:
-        print(y)
+        #print(y)
         """ 
         if int(y[2]) == y_test[i][2]:
             print(" -- correct -- ")
@@ -132,21 +134,22 @@ def main():
         i += 1
 
     print("y pred")
+    print("---------------------------")
     print(y_pred)
     #species = np.array(y_test).argmax(axis=1)
-    print("species")
-   # print(species)
-   # predictions = np.array(y_pred).argmax(axis=1)
-    print("predictions")
-  #  print(predictions)
-   # cf = confusion_matrix(species, predictions)
-    print("confusion matrix")
+    #print("species")
+    #print(species)
+    #predictions = np.array(y_pred).argmax(axis=1)
+    #print("predictions")
+    #print(predictions)
+    #cf = confusion_matrix(species, predictions)
+    #print("confusion matrix")
     #print(cf)
-    print("main DONE")
+    #print("main DONE")
 
 
 # Test the above function
-main()
+#apply_desicion_tree("Data/test_fake_features_for_DT.csv", "Data/test_DT2/")
 
 # from this on is from source: https://www.geeksforgeeks.org/decision-tree-implementation-python/
 #it is for inspiration; delete later
@@ -238,4 +241,4 @@ def main2():
 
 # Calling main function
  #if __name__ == "__main__":
-main2()
+#main2()
