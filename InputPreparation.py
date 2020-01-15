@@ -52,9 +52,8 @@ def get_timestamps(path):
     print("---------------------------")
     return timestamps
 
-
-# test the above function
-# get_timestamps("Data/timestamps.csv")
+#test the above function
+#get_timestamps("Data/timestamps.csv")
 
 
 def cut_audio_segment(old_name, start_stamp, end_stamp, new_name):
@@ -155,22 +154,21 @@ def add_classification_labels(path, self_eval_rates):
         rating = ""
         print("----File----")
         print(file)
-        p_no_audio_file = file[1]  # str
-        print("person in audio file : " + p_no_audio_file)
+        p_no_audio_file = file[1] #str
+        print("person in audio file : "+p_no_audio_file)
         for rate in eval_rates:
             # check that the evaluation participant matches with participant audio
             p_no_rate = str(rate[0])  # cast int to str
             print("person in evaluation form : " + p_no_rate)
             if p_no_rate == p_no_audio_file:
-                print(
-                    "found a match in participant numbers between evaluation and audio files : " + p_no_audio_file + " - " + p_no_rate)
-                file_segment = int(file[3])  # get the segment number from the audio file name
-                rate_seg = rate[1]  # get the segment number from the evaluation form
-                rate_rating = rate[3]  # get the rating of overwhelmedness from the evaluation form
+                print("found a match in participant numbers between evaluation and audio files : "+p_no_audio_file+" - "+p_no_rate)
+                file_segment = int(file[3]) #get the segment number from the audio file name
+                rate_seg = rate[1] #get the segment number from the evaluation form
+                rate_rating = rate[3] #get the rating of overwhelmedness from the evaluation form
                 print("*************")
                 print("file_segment : " + str(file_segment))
-                print("rate_seg : " + str(rate_seg))
-                print("rate_rating : " + str(rate_rating))
+                print("rate_seg : "+str(rate_seg))
+                print("rate_rating : "+str(rate_rating))
                 print("*************")
                 if file_segment == rate_seg and rate_rating < 3:
                     print("in rating N")
