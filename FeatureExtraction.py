@@ -3,6 +3,7 @@ Feature extraction
 """
 import scipy.io.wavfile as wav
 import speechpy as sp
+import numpy as np
 
 
 def preemphasize_signal(audio):
@@ -18,16 +19,49 @@ def preemphasize_signal(audio):
 
 def extract_mfcc(audio, rate):
     """
-    Method to extract 39 mfcc features (mfcc, energy, deltas, delta deltas)
+    Method to extract 39 mfcc features (mfcc, energy, deltas, delta deltas) per frame
     :param rate: sampling rate of audio
     :param audio: audio signal (preemphasized best)
-    :return: 39 mfcc features????
+    :return: 39 mfcc features for each frame
     """
     mfcc_features = sp.feature.mfcc(audio, rate, num_cepstral=12)
-    mfe_features = sp.feature.lmfe(audio, rate)
+    mfe_features = sp.feature.lmfe(audio, rate)#get back 40 log energies for each filter for each frame
+
+    energy_features = []
+    for frame_energies in mfe_features:
+        mean_energy = 0
+        for energy in frame_energies:
+            mean_energy += energy
+        mean_energy = mean_energy/len(frame_energies)
+        energy_features.append(mean_energy)
+
     derivatives_mfcc = sp.feature.extract_derivative_feature(mfcc_features)
+    mfcc_delta_features = []
+    mfcc_delta_delta_features = []
+    for frame_derivatives in derivatives_mfcc:
+        coefficient_delta = []
+        coefficient_delta_delta = []
+        for coefficient in frame_derivatives:
+            coefficient_delta.append(coefficient[1])
+            coefficient_delta_delta.append(coefficient[2])
+        mfcc_delta_features.append(coefficient_delta)
+        mfcc_delta_delta_features.append(coefficient_delta_delta)
+
     derivatives_mfe = sp.feature.extract_derivative_feature(mfe_features)
-    return mfcc_features, mfe_features, derivatives_mfcc, derivatives_mfe
+    energy_delta_features = []
+    energy_delta_delta_features = []
+    for frame_energy_derivatives in derivatives_mfe:
+        mean_delta_energy = 0
+        mean_delta_delta_energy = 0
+        for energy in frame_energy_derivatives:
+            mean_delta_energy += energy[1]
+            mean_delta_delta_energy += energy[2]
+        mean_delta_energy = mean_delta_energy/len(frame_energy_derivatives)
+        mean_delta_delta_energy = mean_delta_delta_energy/len(frame_energy_derivatives)
+        energy_delta_features.append(mean_delta_energy)
+        energy_delta_delta_features.append(mean_delta_delta_energy)
+
+    return mfcc_features, energy_features, mfcc_delta_features, mfcc_delta_delta_features, energy_delta_features, energy_delta_delta_features
 
 
 def extract_spectrum(audio, rate):
@@ -54,6 +88,8 @@ def extract_power_spectrum(audio, rate):
     return power_spectrum
 
 
-s,r = preemphasize_signal("Data/p2_segmented/p2_1_q1.wav")
-spec = extract_spectrum(s,r)
-power = extract_power_spectrum(s,r)
+s,r = preemphasize_signal("Data/p2_segmented/N_p2_0_1a.wav")
+m, e, md, mdd, ed, edd = extract_mfcc(s, r)
+
+print(len(ed), len(edd))
+
