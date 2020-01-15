@@ -1,5 +1,8 @@
 """
-Convert the .wav audio files so that they can be used for further processing and classification
+Preprocess audio recordings
+Removing silences
+cutting of audio
+labeling
 """
 
 import os

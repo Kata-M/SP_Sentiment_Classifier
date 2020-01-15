@@ -1,3 +1,3 @@
 import InputPreparation
-import FeatureExtraction
+import MFCCExtraction
 import Classification
