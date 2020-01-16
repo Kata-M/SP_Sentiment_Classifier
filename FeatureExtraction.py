@@ -7,6 +7,9 @@ import numpy as np
 import os
 import pandas as pd
 import glob
+import amfm_decompy.pYAAPT as pYAAPT
+import amfm_decompy.basic_tools as basic
+
 
 def preemphasize_signal(audio):
     """
@@ -65,17 +68,36 @@ def extract_mfcc(audio, rate):
     return mfcc_features, energy_features, mfcc_delta_features, mfcc_delta_delta_features, energy_delta_features, energy_delta_delta_features
 
 
-def extract_mfcc_vectors(directory):
+def extract_pitch(path):
+    """
+    Method to extract pitch values and energy
+    :param path: path to the audio file
+    :return: interpolated pitch values and pitch energy
+    """
+    signal = basic.SignalObj(path)
+    pitch = pYAAPT.yaapt(signal)
+    return pitch.samp_interp, pitch.energy, pitch.nframes
+
+#i = 0
+#for filename in glob.glob(os.path.join("Data/all_p_no_silence/", '*.wav')):
+    #p = extract_pitch(filename)
+   # i += 1
+   # print(i, p[2])
+
+
+def extract_features(directory):
     """
     Method to extract the MFCC feature vectors (39 dimensions) for each frame of an audio file and write it to csv
     :param audiofile: Path to audio file
     """
-    max_no_frames = 0 #know this to fill up the rest with 0 to have comparable data
+    max_no_frames_mfcc = 0 #know this to fill up the rest with 0 to have comparable data
+    max_no_frames_pitch = 0
     for filename in glob.glob(os.path.join(directory, '*.wav')):
         signal, rate = preemphasize_signal(filename)
         file_mfcc = extract_mfcc(signal, rate)[0]
-        max_no_frames = max(max_no_frames, len(file_mfcc))
-    print(max_no_frames)
+        max_no_frames_mfcc = max(max_no_frames_mfcc, len(file_mfcc))
+        nframes_pitch = extract_pitch(filename)[2]
+        max_no_frames_pitch = max(max_no_frames_pitch, nframes_pitch)
     final_data = []
     for filename in glob.glob(os.path.join(directory, '*.wav')):
         signal, rate = preemphasize_signal(filename)
@@ -90,52 +112,29 @@ def extract_mfcc_vectors(directory):
             mfcc_dd.extend(delta_delta_coefficients)
         e_d.extend(file_energy_d)
         e_dd.extend(file_energy_d_d)
-        print(len(mfcc_dd))
-        if len(file_mfcc) < max_no_frames:
-            difference = max_no_frames - len(file_mfcc)
-            print(difference)
-            mfcc.extend(np.zeros(difference*12, dtype=int))
-            energy.extend(np.zeros(difference, dtype=int))
-            mfcc_d.extend(np.zeros(difference*12, dtype=int))
-            mfcc_dd.extend(np.zeros(difference*12, dtype=int))
-            e_d.extend(np.zeros(difference, dtype=int))
-            e_dd.extend(np.zeros(difference, dtype=int))
-        print(len(mfcc_dd))
-        end_vector = mfcc + energy + mfcc_d + mfcc_dd + e_d + e_dd
-        print(len(end_vector))
+        if len(file_mfcc) < max_no_frames_mfcc:
+            diff1 = max_no_frames_mfcc - len(file_mfcc)
+            mfcc.extend(np.zeros(diff1*12, dtype=int))
+            energy.extend(np.zeros(diff1, dtype=int))
+            mfcc_d.extend(np.zeros(diff1*12, dtype=int))
+            mfcc_dd.extend(np.zeros(diff1*12, dtype=int))
+            e_d.extend(np.zeros(diff1, dtype=int))
+            e_dd.extend(np.zeros(diff1, dtype=int))
+        pitch_values, pitch_energy = [], []
+        pitch, pitch_e, nframes_p = extract_pitch(filename)
+        pitch_values.extend(pitch)
+        pitch_energy.extend(pitch_e)
+        if nframes_p < max_no_frames_pitch:
+            diff2 = max_no_frames_pitch - nframes_p
+            pitch_values.extend(np.zeros(diff2, dtype=int))
+            pitch_energy.extend(np.zeros(diff2, dtype=int))
+        end_vector = mfcc + energy + mfcc_d + mfcc_dd + e_d + e_dd + pitch_values + pitch_energy
         final_data.append(end_vector)
     df = pd.DataFrame(final_data)
-    df.to_csv("Data/mfcc_features.csv")
+    return df
 
-extract_mfcc_vectors("Data/all_p_no_silence/")
-
-
-def extract_spectrum(audio, rate):
-    """
-    Method to extract spectrum via Fast fourier transform
-    :param audio: audio
-    :param rate: rate
-    :return: Spectrum feature
-    """
-    frames = sp.processing.stack_frames(audio, rate)
-    spectrum = sp.processing.fft_spectrum(frames)
-    return spectrum
+print(extract_features("Data/all_p_no_silence/"))
 
 
-def extract_power_spectrum(audio, rate):
-    """
-    Method to extract power spectrum for each frame
-    :param audio: audio
-    :param rate: rate
-    :return: Spectrum feature
-    """
-    frames = sp.processing.stack_frames(audio, rate)
-    power_spectrum = sp.processing.power_spectrum(frames)
-    return power_spectrum
 
-
-s,r = preemphasize_signal("Data/p2_segmented/N_p2_0_1a.wav")
-m, e, md, mdd, ed, edd = extract_mfcc(s, r)
-
-print(len(mdd[0]))
 

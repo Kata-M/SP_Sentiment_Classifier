@@ -18,6 +18,7 @@ def import_signal(file):
 
 r, s = import_signal("Data/p2_segmented/p2_1_q1.wav")
 
+
 def preemphasis(signal):
     """
     Method to pre-emphasize given audio signal by alpha = 0.97
@@ -28,6 +29,7 @@ def preemphasis(signal):
     emphasized_signal = numpy.append(signal[0], signal[1:] - pre_emphasis * signal[:-1])
     return emphasized_signal
 print(preemphasis(s))
+
 
 def frame(signal, sample_rate):
     """
