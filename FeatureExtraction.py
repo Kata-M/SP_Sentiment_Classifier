@@ -133,7 +133,7 @@ def extract_features(directory):
     df = pd.DataFrame(final_data)
     return df
 
-print(extract_features("Data/all_p_no_silence/"))
+#print(extract_features("Data/all_p_no_silence/"))
 
 
 

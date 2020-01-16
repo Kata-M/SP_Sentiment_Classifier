@@ -10,6 +10,7 @@ from IPython.display import Image
 import pydotplus
 
 from InputPreparation import get_audiofilenames
+import FeatureExtraction
 
 
 def get_feature_file(path):
@@ -69,14 +70,16 @@ def generate_col_names(num_of_frames):
 
 def apply_desicion_tree(path_to_files, feature_file):
     print("start the apply_desicion_tree")
-    col_names = generate_col_names(218790)
+    col_names = generate_col_names(230010)
     print("past generate_col_names")
     #col_names = ['mfcc1', 'mfcc2', 'mfcc3', 'mfcc4', 'mfcc5', 'mfcc6','mfcc7', 'mfcc8','mfcc9', 'mfcc10','mfcc11', 'mfcc12']
     # feature_cols = ['mfcc', 'mfccD', 'mfccDD', 'power', 'powerD', 'powerDD']
     feature_cols = col_names
     # load dataset
-    feature_matrix = pd.read_csv(feature_file, header=None, names=col_names, skiprows=1)
-    print("past read_csv")
+    # feature_matrix = pd.read_csv(feature_file, header=None, names=col_names, skiprows=1)
+    # Use FeatureExtraction class's method to extract the MFCC and pitch features, load them to a dataframe and give that to feature_matrix
+    feature_matrix = FeatureExtraction.extract_features(path_to_files)
+    print("past load feature_matrix")
     #feature_matrix.head()
     #numcols = len(feature_matrix[0])
     #print("test feature matrix number of columns  ")
