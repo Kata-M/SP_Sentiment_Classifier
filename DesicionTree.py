@@ -62,21 +62,26 @@ def draw_dt(clf, feature_cols):
 
 def generate_col_names(num_of_frames):
     col_names = []
-    for frame in num_of_frames:
-        col_names.append("f"+str(frame))
+    for i in range(0, num_of_frames):
+        col_names.append("f"+str(i))
     return col_names
 
 
-def apply_desicion_tree(path_to_files):
-    col_names = ['mfcc1', 'mfcc2', 'mfcc3', 'mfcc4', 'mfcc5', 'mfcc6','mfcc7', 'mfcc8','mfcc9', 'mfcc10','mfcc11', 'mfcc12']
+def apply_desicion_tree(path_to_files, feature_file):
+    print("start the apply_desicion_tree")
+    col_names = generate_col_names(218790)
+    print("past generate_col_names")
+    #col_names = ['mfcc1', 'mfcc2', 'mfcc3', 'mfcc4', 'mfcc5', 'mfcc6','mfcc7', 'mfcc8','mfcc9', 'mfcc10','mfcc11', 'mfcc12']
     # feature_cols = ['mfcc', 'mfccD', 'mfccDD', 'power', 'powerD', 'powerDD']
     feature_cols = col_names
     # load dataset
-    feature_matrix = pd.read_csv("Data/test.csv", header=None, names=col_names)
-    feature_matrix.head()
-    print("test feature matrix ")
-    print("----------------")
-    print(feature_matrix)
+    feature_matrix = pd.read_csv(feature_file, header=None, names=col_names, skiprows=1)
+    print("past read_csv")
+    #feature_matrix.head()
+    #numcols = len(feature_matrix[0])
+    #print("test feature matrix number of columns  ")
+    #print("----------------")
+    #print(numcols)
 
     X = feature_matrix[feature_cols]  # Features
     print("test X ")
@@ -106,14 +111,14 @@ def apply_desicion_tree(path_to_files):
     print("----------------")
 
     # Create Decision Tree classifer object
-    #clf = DecisionTreeClassifier()
+    clf = DecisionTreeClassifier()
 
     # with some optimisation parameters
     # criterion="entropy"
     # criterion = "gini" <-- default
     # max_depth=2
     # max_depth=None <-- default
-    clf = DecisionTreeClassifier(criterion="entropy", max_depth=None)
+    #clf = DecisionTreeClassifier(criterion="entropy", max_depth=None)
 
     # Train Decision Tree Classifer
     clf = clf.fit(X_train, y_train)
@@ -126,9 +131,16 @@ def apply_desicion_tree(path_to_files):
 
     # Model Accuracy, how often is the classifier correct?
     print("Accuracy:", metrics.accuracy_score(y_test, y_pred))
-    draw_dt(clf,feature_cols)
+    print("Report : ")
+    print("----------------")
+    print(metrics.classification_report(y_test, y_pred))
+    #df_report = pd.DataFrame()
+    #latex_report = df_report.to_latex()
+    #print("Test to latex table")
+    #print(latex_report)
+    draw_dt(clf, feature_cols)
     print(" tree drawn, named DT.png")
 
 
-apply_desicion_tree("Data/all_p_no_silence/")
+apply_desicion_tree("Data/all_p_no_silence/", "Data/mfcc_features.csv")
 
