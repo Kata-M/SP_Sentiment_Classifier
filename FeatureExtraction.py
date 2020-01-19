@@ -31,14 +31,14 @@ def extract_mfcc(audio, rate):
     :return: 12 mfccs, 1 energy, 12 mfcc deltas, 12 mfcc delta-deltas, 1 delta energy, 1 delta-delta energy
     """
     mfcc_features = sp.feature.mfcc(audio, rate, num_cepstral=12)
-    mfe_features = sp.feature.lmfe(audio, rate)#get back 40 log energies for each filter for each frame
+    mfe_features = sp.feature.lmfe(audio, rate)  # get back 40 log energies for each filter for each frame
 
     energy_features = []
     for frame_energies in mfe_features:
         mean_energy = 0
         for energy in frame_energies:
             mean_energy += energy
-        mean_energy = mean_energy/len(frame_energies)
+        mean_energy = mean_energy / len(frame_energies)
         energy_features.append(mean_energy)
 
     derivatives_mfcc = sp.feature.extract_derivative_feature(mfcc_features)
@@ -62,36 +62,33 @@ def extract_mfcc(audio, rate):
         for energy in frame_energy_derivatives:
             mean_delta_energy += energy[1]
             mean_delta_delta_energy += energy[2]
-        mean_delta_energy = mean_delta_energy/len(frame_energy_derivatives)
-        mean_delta_delta_energy = mean_delta_delta_energy/len(frame_energy_derivatives)
+        mean_delta_energy = mean_delta_energy / len(frame_energy_derivatives)
+        mean_delta_delta_energy = mean_delta_delta_energy / len(frame_energy_derivatives)
         energy_delta_features.append(mean_delta_energy)
         energy_delta_delta_features.append(mean_delta_delta_energy)
 
-    #calculate averages over all frames
-    avg_energy = sum(energy_features) /len(energy_features)
-    avg_energy_d = sum(energy_delta_features) /len(energy_delta_features)
-    avg_energy_dd = sum(energy_delta_delta_features) /len(energy_delta_delta_features)
-    avg_mfcc = sum(map(np.array, mfcc_features)) /len(mfcc_features)
-    avg_mfcc_d = sum(map(np.array, mfcc_delta_features)) /len(mfcc_delta_features)
+    # calculate averages over all frames
+    avg_energy = sum(energy_features) / len(energy_features)
+    avg_energy_d = sum(energy_delta_features) / len(energy_delta_features)
+    avg_energy_dd = sum(energy_delta_delta_features) / len(energy_delta_delta_features)
+    avg_mfcc = sum(map(np.array, mfcc_features)) / len(mfcc_features)
+    avg_mfcc_d = sum(map(np.array, mfcc_delta_features)) / len(mfcc_delta_features)
     avg_mfcc_dd = sum(map(np.array, mfcc_delta_delta_features)) / len(mfcc_delta_delta_features)
 
     return avg_mfcc, avg_energy, avg_mfcc_d, avg_mfcc_dd, avg_energy_d, avg_energy_dd
+
 
 def extract_pitch(path):
     """
     Method to extract pitch values and energy
     :param path: path to the audio file
-    :return: interpolated pitch values and pitch energy
+    :return: pitch values and pitch energy, averaged over number of frames
     """
     signal = basic.SignalObj(path)
     pitch = pYAAPT.yaapt(signal)
-    return pitch.samp_interp, pitch.energy, pitch.nframes
-
-#i = 0
-#for filename in glob.glob(os.path.join("Data/all_p_no_silence/", '*.wav')):
-    #p = extract_pitch(filename)
-   # i += 1
-   # print(i, p[2])
+    avg_pitch = sum(map(np.array, pitch.samp_values)) / pitch.nframes
+    avg_pitch_energy = sum(map(np.array, pitch.energy)) / pitch.nframes
+    return avg_pitch, avg_pitch_energy
 
 
 def extract_features(directory):
@@ -99,7 +96,7 @@ def extract_features(directory):
     Method to extract the MFCC feature vectors (39 dimensions) for each frame of an audio file and write it to csv
     :param audiofile: Path to audio file
     """
-    max_no_frames_mfcc = 0 #know this to fill up the rest with 0 to have comparable data
+    max_no_frames_mfcc = 0  # know this to fill up the rest with 0 to have comparable data
     max_no_frames_pitch = 0
     for filename in glob.glob(os.path.join(directory, '*.wav')):
         signal, rate = preemphasize_signal(filename)
@@ -123,10 +120,10 @@ def extract_features(directory):
         e_dd.extend(file_energy_d_d)
         if len(file_mfcc) < max_no_frames_mfcc:
             diff1 = max_no_frames_mfcc - len(file_mfcc)
-            mfcc.extend(np.zeros(diff1*12, dtype=int))
+            mfcc.extend(np.zeros(diff1 * 12, dtype=int))
             energy.extend(np.zeros(diff1, dtype=int))
-            mfcc_d.extend(np.zeros(diff1*12, dtype=int))
-            mfcc_dd.extend(np.zeros(diff1*12, dtype=int))
+            mfcc_d.extend(np.zeros(diff1 * 12, dtype=int))
+            mfcc_dd.extend(np.zeros(diff1 * 12, dtype=int))
             e_d.extend(np.zeros(diff1, dtype=int))
             e_dd.extend(np.zeros(diff1, dtype=int))
         pitch_values, pitch_energy = [], []
@@ -142,8 +139,4 @@ def extract_features(directory):
     df = pd.DataFrame(final_data)
     return df
 
-#print(extract_features("Data/all_p_no_silence/"))
-
-
-
-
+# print(extract_features("Data/all_p_no_silence/"))
