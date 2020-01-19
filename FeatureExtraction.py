@@ -9,7 +9,7 @@ import pandas as pd
 import glob
 import amfm_decompy.pYAAPT as pYAAPT
 import amfm_decompy.basic_tools as basic
-from operator import add
+from itertools import chain
 
 
 def preemphasize_signal(audio):
@@ -94,49 +94,16 @@ def extract_pitch(path):
 def extract_features(directory):
     """
     Method to extract the MFCC feature vectors (39 dimensions) for each frame of an audio file and write it to csv
-    :param audiofile: Path to audio file
+    :param directory: Path to audio file
     """
-    max_no_frames_mfcc = 0  # know this to fill up the rest with 0 to have comparable data
-    max_no_frames_pitch = 0
-    for filename in glob.glob(os.path.join(directory, '*.wav')):
-        signal, rate = preemphasize_signal(filename)
-        file_mfcc = extract_mfcc(signal, rate)[0]
-        max_no_frames_mfcc = max(max_no_frames_mfcc, len(file_mfcc))
-        nframes_pitch = extract_pitch(filename)[2]
-        max_no_frames_pitch = max(max_no_frames_pitch, nframes_pitch)
     final_data = []
     for filename in glob.glob(os.path.join(directory, '*.wav')):
         signal, rate = preemphasize_signal(filename)
-        file_mfcc, file_energy, file_mfcc_d, file_mfcc_d_d, file_energy_d, file_energy_d_d = extract_mfcc(signal, rate)
-        mfcc, energy, mfcc_d, mfcc_dd, e_d, e_dd = [], [], [], [], [], []
-        for coefficients in file_mfcc:
-            mfcc.extend(coefficients)
-        energy = file_energy
-        for delta_coefficients in file_mfcc_d:
-            mfcc_d.extend(delta_coefficients)
-        for delta_delta_coefficients in file_mfcc_d_d:
-            mfcc_dd.extend(delta_delta_coefficients)
-        e_d.extend(file_energy_d)
-        e_dd.extend(file_energy_d_d)
-        if len(file_mfcc) < max_no_frames_mfcc:
-            diff1 = max_no_frames_mfcc - len(file_mfcc)
-            mfcc.extend(np.zeros(diff1 * 12, dtype=int))
-            energy.extend(np.zeros(diff1, dtype=int))
-            mfcc_d.extend(np.zeros(diff1 * 12, dtype=int))
-            mfcc_dd.extend(np.zeros(diff1 * 12, dtype=int))
-            e_d.extend(np.zeros(diff1, dtype=int))
-            e_dd.extend(np.zeros(diff1, dtype=int))
-        pitch_values, pitch_energy = [], []
-        pitch, pitch_e, nframes_p = extract_pitch(filename)
-        pitch_values.extend(pitch)
-        pitch_energy.extend(pitch_e)
-        if nframes_p < max_no_frames_pitch:
-            diff2 = max_no_frames_pitch - nframes_p
-            pitch_values.extend(np.zeros(diff2, dtype=int))
-            pitch_energy.extend(np.zeros(diff2, dtype=int))
-        end_vector = mfcc + energy + mfcc_d + mfcc_dd + e_d + e_dd + pitch_values + pitch_energy
+        mfcc, energy, mfcc_d, mfcc_dd, energy_d, energy_dd = extract_mfcc(signal, rate)
+        pitch, pitch_energy = extract_pitch(filename)
+        end_vector = list(chain(mfcc, [energy], mfcc_d, mfcc_dd, [energy_d], [energy_dd], [pitch], [pitch_energy]))
         final_data.append(end_vector)
     df = pd.DataFrame(final_data)
     return df
 
-# print(extract_features("Data/all_p_no_silence/"))
+print(extract_features("Data/all_p_no_silence/"))
