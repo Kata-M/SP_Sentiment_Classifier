@@ -9,6 +9,7 @@ import pandas as pd
 import glob
 import amfm_decompy.pYAAPT as pYAAPT
 import amfm_decompy.basic_tools as basic
+from operator import add
 
 
 def preemphasize_signal(audio):
@@ -65,8 +66,16 @@ def extract_mfcc(audio, rate):
         mean_delta_delta_energy = mean_delta_delta_energy/len(frame_energy_derivatives)
         energy_delta_features.append(mean_delta_energy)
         energy_delta_delta_features.append(mean_delta_delta_energy)
-    return mfcc_features, energy_features, mfcc_delta_features, mfcc_delta_delta_features, energy_delta_features, energy_delta_delta_features
 
+    #calculate averages over all frames
+    avg_energy = sum(energy_features) /len(energy_features)
+    avg_energy_d = sum(energy_delta_features) /len(energy_delta_features)
+    avg_energy_dd = sum(energy_delta_delta_features) /len(energy_delta_delta_features)
+    avg_mfcc = sum(map(np.array, mfcc_features)) /len(mfcc_features)
+    avg_mfcc_d = sum(map(np.array, mfcc_delta_features)) /len(mfcc_delta_features)
+    avg_mfcc_dd = sum(map(np.array, mfcc_delta_delta_features)) / len(mfcc_delta_delta_features)
+
+    return avg_mfcc, avg_energy, avg_mfcc_d, avg_mfcc_dd, avg_energy_d, avg_energy_dd
 
 def extract_pitch(path):
     """
