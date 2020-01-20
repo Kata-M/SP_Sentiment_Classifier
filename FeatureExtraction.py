@@ -11,6 +11,8 @@ import amfm_decompy.pYAAPT as pYAAPT
 import amfm_decompy.basic_tools as basic
 from itertools import chain
 
+import InputPreparation
+
 
 def preemphasize_signal(audio):
     """
@@ -91,6 +93,42 @@ def extract_pitch(path):
     return avg_pitch, avg_pitch_energy
 
 
+def normalise_pitch(path_to_audio_file):
+    """
+    Method: to normalise pitch of one participant
+    Param: path_to_audio_files is path to files of only one participant
+    """
+
+    audiofiles = InputPreparation.get_audiofilenames(path_to_audio_files)
+    pitch_allfiles = []
+    pitchenergy_allfiles = []
+
+    for audiofile in audiofiles:
+        avg_pitch, avg_pitch_energy = extract_pitch(path_to_audio_files + audiofile)
+        pitch_allfiles.append(avg_pitch)
+        pitchenergy_allfiles.append(avg_pitch_energy)
+
+    pitch_mu = np.mean(pitch_allfiles)
+    pitch_mu_energy = np.mean(pitchenergy_allfiles)
+
+    pitch_SD = np.std(pitch_allfiles)
+    pitch_SD_energy = np.std(pitchenergy_allfiles)
+
+    for Ap_i in pitch_allfiles:
+        normalized_pitch = (Ap_i - pitch_mu) / pitch_SD
+
+    for pitch_energy_i in pitchenergy_allfiles:
+        normalized_pitch_energy = (pitch_energy_i - pitch_mu_energy) / pitch_SD_energy
+
+
+    print(normalized_pitch)
+    print(normalized_pitch_energy)
+
+
+    return normalized_pitch, normalized_pitch_energy
+
+
+
 def extract_features(directory):
     """
     Method to extract the MFCC feature vectors (39 dimensions) for each frame of an audio file and write it to csv
@@ -106,4 +144,8 @@ def extract_features(directory):
     df = pd.DataFrame(final_data)
     return df
 
-print(extract_features("Data/all_p_no_silence/"))
+
+
+#print(extract_features("Data/all_p_no_silence/"))
+
+normalise_pitch("Data/Test_DT2/")
