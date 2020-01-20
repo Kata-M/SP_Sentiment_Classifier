@@ -93,18 +93,29 @@ def extract_pitch(path):
     return avg_pitch, avg_pitch_energy
 
 
-def normalise_pitch(path_to_audio_file):
+def normalise_pitch(pitch, pitch_e, p_mu, p_sd, p_e_mu, p_e_sd):
     """
     Method: to normalise pitch of one participant
     Param: path_to_audio_files is path to files of only one participant
     """
+    normalised_pitch = (pitch - p_mu) / p_sd
+    normalised_pitch_energy = (pitch_e - p_e_mu) / p_e_sd
 
-    audiofiles = InputPreparation.get_audiofilenames(path_to_audio_files)
+    return normalised_pitch, normalised_pitch_energy
+
+
+def calculate_mu_sd(directory):
+    """
+    Method to calculate mu and sd for one participant given the folder
+    :param directory: participant folder
+    :return: mu, sd of that participant
+    """
+    audiofiles = InputPreparation.get_audiofilenames(directory)
     pitch_allfiles = []
     pitchenergy_allfiles = []
 
     for audiofile in audiofiles:
-        avg_pitch, avg_pitch_energy = extract_pitch(path_to_audio_files + audiofile)
+        avg_pitch, avg_pitch_energy = extract_pitch(directory + audiofile)
         pitch_allfiles.append(avg_pitch)
         pitchenergy_allfiles.append(avg_pitch_energy)
 
@@ -113,20 +124,7 @@ def normalise_pitch(path_to_audio_file):
 
     pitch_SD = np.std(pitch_allfiles)
     pitch_SD_energy = np.std(pitchenergy_allfiles)
-
-    for Ap_i in pitch_allfiles:
-        normalized_pitch = (Ap_i - pitch_mu) / pitch_SD
-
-    for pitch_energy_i in pitchenergy_allfiles:
-        normalized_pitch_energy = (pitch_energy_i - pitch_mu_energy) / pitch_SD_energy
-
-
-    print(normalized_pitch)
-    print(normalized_pitch_energy)
-
-
-    return normalized_pitch, normalized_pitch_energy
-
+    return pitch_mu, pitch_mu_energy, pitch_SD, pitch_SD_energy
 
 
 def extract_features(directory):
@@ -134,18 +132,37 @@ def extract_features(directory):
     Method to extract the MFCC feature vectors (39 dimensions) for each frame of an audio file and write it to csv
     :param directory: Path to audio file
     """
+    p2_pitch_mu, p2_pitch_e_mu, p2_pitch_sd, p2_pitch_e_sd = calculate_mu_sd("Data/p2/")
+    p3_pitch_mu, p3_pitch_e_mu, p3_pitch_sd, p3_pitch_e_sd = calculate_mu_sd("Data/p3/")
+    p4_pitch_mu, p4_pitch_e_mu, p4_pitch_sd, p4_pitch_e_sd = calculate_mu_sd("Data/p4/")
+    p5_pitch_mu, p5_pitch_e_mu, p5_pitch_sd, p5_pitch_e_sd = calculate_mu_sd("Data/p5/")
+    p6_pitch_mu, p6_pitch_e_mu, p6_pitch_sd, p6_pitch_e_sd = calculate_mu_sd("Data/p6/")
+    p7_pitch_mu, p7_pitch_e_mu, p7_pitch_sd, p7_pitch_e_sd = calculate_mu_sd("Data/p7/")
+
     final_data = []
     for filename in glob.glob(os.path.join(directory, '*.wav')):
+        print(filename[25])
         signal, rate = preemphasize_signal(filename)
         mfcc, energy, mfcc_d, mfcc_dd, energy_d, energy_dd = extract_mfcc(signal, rate)
         pitch, pitch_energy = extract_pitch(filename)
-        end_vector = list(chain(mfcc, [energy], mfcc_d, mfcc_dd, [energy_d], [energy_dd], [pitch], [pitch_energy]))
+        if str(filename[25]) == '2':
+            this_pitch_mu, this_pitch_e_mu, this_pitch_sd, this_pitch_e_sd = p2_pitch_mu, p2_pitch_e_mu, p2_pitch_sd, p2_pitch_e_sd
+        elif str(filename[25]) == '3':
+            this_pitch_mu, this_pitch_e_mu, this_pitch_sd, this_pitch_e_sd = p3_pitch_mu, p3_pitch_e_mu, p3_pitch_sd, p3_pitch_e_sd
+        elif str(filename[25]) == '4':
+            this_pitch_mu, this_pitch_e_mu, this_pitch_sd, this_pitch_e_sd = p4_pitch_mu, p4_pitch_e_mu, p4_pitch_sd, p4_pitch_e_sd
+        elif str(filename[25]) == '5':
+            this_pitch_mu, this_pitch_e_mu, this_pitch_sd, this_pitch_e_sd = p5_pitch_mu, p5_pitch_e_mu, p5_pitch_sd, p5_pitch_e_sd
+        elif str(filename[25]) == '6':
+            this_pitch_mu, this_pitch_e_mu, this_pitch_sd, this_pitch_e_sd = p6_pitch_mu, p6_pitch_e_mu, p6_pitch_sd, p6_pitch_e_sd
+        elif str(filename[25]) == '7':
+            this_pitch_mu, this_pitch_e_mu, this_pitch_sd, this_pitch_e_sd = p7_pitch_mu, p7_pitch_e_mu, p7_pitch_sd, p7_pitch_e_sd
+        pitch_n, pitch_energy_n = normalise_pitch(pitch, pitch_energy, this_pitch_mu, this_pitch_sd, this_pitch_e_mu,
+                                                  this_pitch_e_sd)
+        end_vector = list(chain(mfcc, [energy], mfcc_d, mfcc_dd, [energy_d], [energy_dd], [pitch_n], [pitch_energy_n]))
         final_data.append(end_vector)
     df = pd.DataFrame(final_data)
     return df
 
 
-
-#print(extract_features("Data/all_p_no_silence/"))
-
-normalise_pitch("Data/Test_DT2/")
+print(extract_features("Data/all_p_no_silence/"))
