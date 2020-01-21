@@ -99,12 +99,12 @@ def normalise_pitch(path_to_audio_file):
     Param: path_to_audio_files is path to files of only one participant
     """
 
-    audiofiles = InputPreparation.get_audiofilenames(path_to_audio_files)
+    audiofiles = InputPreparation.get_audiofilenames(path_to_audio_file)
     pitch_allfiles = []
     pitchenergy_allfiles = []
 
     for audiofile in audiofiles:
-        avg_pitch, avg_pitch_energy = extract_pitch(path_to_audio_files + audiofile)
+        avg_pitch, avg_pitch_energy = extract_pitch(path_to_audio_file + audiofile)
         pitch_allfiles.append(avg_pitch)
         pitchenergy_allfiles.append(avg_pitch_energy)
 
@@ -148,4 +148,4 @@ def extract_features(directory):
 
 #print(extract_features("Data/all_p_no_silence/"))
 
-normalise_pitch("Data/Test_DT2/")
+#normalise_pitch("Data/Test_DT2/")

@@ -61,30 +61,43 @@ def draw_dt(clf, feature_cols):
     graph.write_png('DT.png')
     Image(graph.create_png())
 
-def generate_col_names(num_of_frames):
+def generate_col_names():
     col_names = []
-    for i in range(0, num_of_frames):
-        col_names.append("f"+str(i))
+    for i in range(0, 12):
+        col_names.append("MFCC_coef_"+str(i))
+    col_names.append("E")
+    for i in range(0, 12):
+        col_names.append("MFCC_coef_D_"+str(i))
+
+    for i in range(0, 12):
+        col_names.append("MFCC_coef_DD_"+str(i))
+    col_names.append("E_D")
+    col_names.append("E_DD")
+    col_names.append("Pitch")
+    col_names.append("Pitch_E")
+
     return col_names
 
 
 def apply_desicion_tree(path_to_files, feature_file):
     print("start the apply_desicion_tree")
-    col_names = generate_col_names(230010)
+    col_names = generate_col_names()
+    print(col_names)
     print("past generate_col_names")
-    #col_names = ['mfcc1', 'mfcc2', 'mfcc3', 'mfcc4', 'mfcc5', 'mfcc6','mfcc7', 'mfcc8','mfcc9', 'mfcc10','mfcc11', 'mfcc12']
-    # feature_cols = ['mfcc', 'mfccD', 'mfccDD', 'power', 'powerD', 'powerDD']
+
     feature_cols = col_names
     # load dataset
     # feature_matrix = pd.read_csv(feature_file, header=None, names=col_names, skiprows=1)
+
+
     # Use FeatureExtraction class's method to extract the MFCC and pitch features, load them to a dataframe and give that to feature_matrix
     feature_matrix = FeatureExtraction.extract_features(path_to_files)
     print("past load feature_matrix")
-    #feature_matrix.head()
-    #numcols = len(feature_matrix[0])
-    #print("test feature matrix number of columns  ")
-    #print("----------------")
-    #print(numcols)
+    feature_matrix.head()
+    numcols = len(feature_matrix[0])
+    print("test feature matrix number of columns  ")
+    print("----------------")
+    print(numcols)
 
     X = feature_matrix[feature_cols]  # Features
     print("test X ")
@@ -137,13 +150,9 @@ def apply_desicion_tree(path_to_files, feature_file):
     print("Report : ")
     print("----------------")
     print(metrics.classification_report(y_test, y_pred))
-    #df_report = pd.DataFrame()
-    #latex_report = df_report.to_latex()
-    #print("Test to latex table")
-    #print(latex_report)
     draw_dt(clf, feature_cols)
-    print(" tree drawn, named DT.png")
+    print(" tree drawn, named test_DT2.png")
 
 
-apply_desicion_tree("Data/all_p_no_silence/", "Data/mfcc_features.csv")
+apply_desicion_tree("Data/test_DT2/", "Data/mfcc_features.csv")
 
